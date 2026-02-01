@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Knowledge AI | RAG-Powered Search</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+    
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <span class="logo-text">Knowledge<span class="accent">AI</span></span>
+            </div>
+            
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Live</span>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1 class="title">
+                <span class="title-line">Enterprise Knowledge</span>
+                <span class="title-line gradient-text">Intelligence Platform</span>
+            </h1>
+            <p class="subtitle">
+                AI-powered document search with semantic understanding and role-based access control
+            </p>
+        </section>
+
+        <!-- Main Content -->
+        <div class="content-grid">
+            
+            <!-- Upload Section -->
+            <div class="card card-upload">
+                <div class="card-header">
+                    <div class="card-icon upload-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="card-title">Upload Document</h2>
+                        <p class="card-desc">PDF files up to 20MB</p>
+                    </div>
+                </div>
+
+                <div class="upload-zone" id="uploadZone">
+                    <svg class="upload-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <p class="upload-text">Drag & drop PDF here</p>
+                    <p class="upload-subtext">or click to browse</p>
+                    <input type="file" id="fileInput" accept=".pdf" hidden>
+                </div>
+
+                <div class="form-group">
+                    <label class="label">Access Level</label>
+                    <select id="docType" class="select">
+                        <option value="public">Public - All employees</option>
+                        <option value="hr">HR - HR team only</option>
+                        <option value="admin">Admin - Admins only</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="label">Your Role</label>
+                    <div class="role-chips">
+                        <button class="chip active" data-role="Employee">
+                            <span class="chip-icon">👤</span>
+                            Employee
+                        </button>
+                        <button class="chip" data-role="HR">
+                            <span class="chip-icon">👔</span>
+                            HR
+                        </button>
+                        <button class="chip" data-role="Admin">
+                            <span class="chip-icon">👑</span>
+                            Admin
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="uploadBtn">
+                    <span class="btn-text">Upload Document</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="upload-result" id="uploadResult"></div>
+            </div>
+
+            <!-- Search Section -->
+            <div class="card card-search">
+                <div class="card-header">
+                    <div class="card-icon search-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="card-title">Search Knowledge Base</h2>
+                        <p class="card-desc">Ask anything about your documents</p>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <svg class="search-icon-input" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input 
+                        type="text" 
+                        id="queryInput" 
+                        class="search-input" 
+                        placeholder="What is the vacation policy?"
+                    >
+                    <button class="search-btn" id="searchBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label class="label">Search as</label>
+                    <div class="role-chips">
+                        <button class="chip active" data-role="Employee" data-target="search">
+                            <span class="chip-icon">👤</span>
+                            Employee
+                        </button>
+                        <button class="chip" data-role="HR" data-target="search">
+                            <span class="chip-icon">👔</span>
+                            HR
+                        </button>
+                        <button class="chip" data-role="Admin" data-target="search">
+                            <span class="chip-icon">👑</span>
+                            Admin
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state" id="loadingState" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text">Searching knowledge base...</p>
+                </div>
+
+                <!-- Answer Display -->
+                <div class="answer-container" id="answerContainer" style="display: none;">
+                    <div class="answer-header">
+                        <svg class="answer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <span class="answer-title">Answer</span>
+                    </div>
+                    <div class="answer-content" id="answerText"></div>
+                    
+                    <div class="sources-container" id="sourcesContainer">
+                        <div class="sources-header">
+                            <svg class="sources-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                                <polyline points="13 2 13 9 20 9"/>
+                            </svg>
+                            <span>Sources</span>
+                        </div>
+                        <div class="sources-list" id="sourcesList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built with ❤️ using FastAPI, Supabase, HuggingFace & Google Gemini</p>
+            <div class="tech-badges">
+                <span class="tech-badge">pgvector</span>
+                <span class="tech-badge">RAG</span>
+                <span class="tech-badge">RBAC</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
