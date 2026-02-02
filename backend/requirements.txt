@@ -1,7 +1,7 @@
 # ========================================
 # Enterprise Knowledge Intelligence Platform
-# Python Dependencies for Render Deployment
-# FIXED: Resolved version conflicts
+# Python Dependencies (Render / Vercel Safe)
+# FINAL – Feb 2026
 # ========================================
 
 # Web Framework
@@ -16,23 +16,22 @@ psycopg2-binary==2.9.10
 # PDF Processing
 pypdf==5.1.0
 
-# Embeddings & ML
-# ⚠️ REMOVED sentence-transformers (causes conflicts + not needed with HF API)
+# Embeddings (HF Inference API – no local ML)
 huggingface-hub==0.26.5
+requests==2.32.3
 
-# LLM Integration - Google GenAI SDK
+# LLM Integration (NEW Gemini SDK)
 google-genai==0.2.2
 
-# Data Validation
+# Validation & Settings
 pydantic==2.10.3
 pydantic-settings==2.6.1
 
-# HTTP & API
+# HTTP Client (Supabase + Google SDK compatible)
 httpx>=0.26,<0.28
-requests==2.32.3
 
 # Utilities
 python-dotenv==1.0.1
 
-# ASGI Server (for production)
+# Production Server
 gunicorn==23.0.0
