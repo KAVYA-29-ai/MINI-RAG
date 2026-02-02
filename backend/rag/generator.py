@@ -1,38 +1,26 @@
 """
 RAG Generator - Answer generation with Google Gemini
 Production-ready for Render
+Using NEW google-genai SDK (2024)
 """
 import os
 import time
 import logging
-import google.generativeai as genai
-from google.generativeai.types import GenerationConfig, HarmCategory, HarmBlockThreshold
+from google import genai
+from google.genai import types
 
 logger = logging.getLogger(__name__)
 
-# Configure Gemini at module level (singleton)
+# Configure Gemini client
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY not set in environment")
 
-genai.configure(api_key=GEMINI_API_KEY)
+# Initialize NEW client
+client = genai.Client(api_key=GEMINI_API_KEY)
 
-# Reusable model instance
-MODEL = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
-    generation_config=GenerationConfig(
-        temperature=0.3,
-        max_output_tokens=1024,
-        top_p=0.95,
-        top_k=40
-    ),
-    safety_settings={
-        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
-    }
-)
+# Model name - using latest
+MODEL_NAME = "gemini-2.0-flash-exp"  # Latest model
 
 # Constants
 MAX_CONTEXT_CHARS = 6000
@@ -60,7 +48,7 @@ def generate_answer(
     role: str = "Employee"
 ) -> str:
     """
-    Generate RAG answer using Gemini.
+    Generate RAG answer using NEW Gemini SDK.
     
     Args:
         query: User's question
@@ -91,12 +79,43 @@ QUESTION:
 
 Provide a clear answer based ONLY on the CONTEXT above. Include source citations."""
     
+    # Combine prompts
+    full_prompt = f"{system_prompt}\n\n{user_prompt}"
+    
     # Retry logic
     for attempt in range(MAX_RETRIES):
         try:
             logger.info(f"🤖 Generating answer (attempt {attempt + 1}/{MAX_RETRIES})")
             
-            response = MODEL.generate_content([system_prompt, user_prompt])
+            # NEW SDK syntax
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=full_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.3,
+                    top_p=0.95,
+                    top_k=40,
+                    max_output_tokens=1024,
+                    safety_settings=[
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_HARASSMENT",
+                            threshold="BLOCK_MEDIUM_AND_ABOVE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_HATE_SPEECH",
+                            threshold="BLOCK_MEDIUM_AND_ABOVE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                            threshold="BLOCK_MEDIUM_AND_ABOVE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_DANGEROUS_CONTENT",
+                            threshold="BLOCK_MEDIUM_AND_ABOVE"
+                        )
+                    ]
+                )
+            )
             
             if not response or not response.text:
                 return "Unable to generate an answer at the moment."
@@ -116,16 +135,20 @@ Provide a clear answer based ONLY on the CONTEXT above. Include source citations
 
 
 def verify_gemini_setup() -> dict:
-    """Health check for Gemini API."""
+    """Health check for Gemini API using NEW SDK."""
     try:
-        response = MODEL.generate_content("Say OK")
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents="Say OK"
+        )
         return {
             "status": "healthy",
-            "model": "gemini-1.5-flash",
+            "model": MODEL_NAME,
             "response": response.text.strip() if response.text else None
         }
     except Exception as e:
         return {
             "status": "unhealthy",
-            "error": str(e)
+            "error": str(e),
+            "model": MODEL_NAME
         }
