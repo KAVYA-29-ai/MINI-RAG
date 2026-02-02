@@ -1,7 +1,6 @@
 """
 Embeddings Generator
 Hugging Face Inference API (Router-based)
-NO InferenceClient, NO provider
 Production-safe for Render / Vercel
 """
 
@@ -36,10 +35,6 @@ def _get_headers() -> dict:
 def generate_embeddings(
     texts: Union[str, List[str]]
 ) -> Union[List[float], List[List[float]]]:
-    """
-    Generate embeddings using Hugging Face Router API.
-    Returns 384-d embeddings.
-    """
 
     is_single = isinstance(texts, str)
     text_list = [texts] if is_single else texts
@@ -53,10 +48,17 @@ def generate_embeddings(
 
     logger.info(f"🧠 Generating {len(text_list)} embedding(s)")
 
+    # 🔥 KEY FIX: explicit feature-extraction payload
+    payload = {
+        "inputs": {
+            "sentences": text_list
+        }
+    }
+
     response = requests.post(
         HF_EMBEDDING_URL,
         headers=_get_headers(),
-        json={"inputs": text_list},
+        json=payload,
         timeout=30,
     )
 
@@ -67,29 +69,24 @@ def generate_embeddings(
 
     data = response.json()
 
-    # Normalize response shape
+    # HF returns List[List[float]]
     if is_single:
-        embedding = data[0] if isinstance(data[0], list) else data
+        embedding = data[0]
         if len(embedding) != EMBEDDING_DIM:
             raise ValueError(
                 f"Expected {EMBEDDING_DIM}-d, got {len(embedding)}-d"
             )
         return embedding
 
-    embeddings: List[List[float]] = []
     for i, emb in enumerate(data):
         if len(emb) != EMBEDDING_DIM:
-            raise ValueError(
-                f"Embedding {i} has dimension {len(emb)}"
-            )
-        embeddings.append(emb)
+            raise ValueError(f"Embedding {i} has dimension {len(emb)}")
 
-    logger.info(f"✅ Generated {len(embeddings)} embeddings")
-    return embeddings
+    logger.info(f"✅ Generated {len(data)} embeddings")
+    return data
 
 
 def verify_embeddings_setup() -> dict:
-    """Health check for embeddings service."""
     try:
         test = generate_embeddings("health check")
         return {
