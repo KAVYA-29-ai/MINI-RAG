@@ -1,6 +1,6 @@
 """
 Embeddings Generator
-Hugging Face Inference API (Router-based)
+Hugging Face Inference API (Explicit Feature-Extraction Pipeline)
 Production-safe for Render / Vercel
 """
 
@@ -17,7 +17,7 @@ EMBEDDING_DIM = 384
 HF_API_TOKEN = os.getenv("HF_API_TOKEN") or os.getenv("HF_API_KEY")
 
 HF_EMBEDDING_URL = (
-    "https://router.huggingface.co/hf-inference/models/"
+    "https://router.huggingface.co/hf-inference/pipeline/feature-extraction/"
     f"{MODEL_NAME}"
 )
 
@@ -48,11 +48,9 @@ def generate_embeddings(
 
     logger.info(f"🧠 Generating {len(text_list)} embedding(s)")
 
-    # 🔥 KEY FIX: explicit feature-extraction payload
+    # 🔥 Explicit feature-extraction payload
     payload = {
-        "inputs": {
-            "sentences": text_list
-        }
+        "inputs": text_list
     }
 
     response = requests.post(
@@ -69,9 +67,9 @@ def generate_embeddings(
 
     data = response.json()
 
-    # HF returns List[List[float]]
+    # Normalize output
     if is_single:
-        embedding = data[0]
+        embedding = data[0] if isinstance(data[0], list) else data
         if len(embedding) != EMBEDDING_DIM:
             raise ValueError(
                 f"Expected {EMBEDDING_DIM}-d, got {len(embedding)}-d"
