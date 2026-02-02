@@ -1,6 +1,6 @@
 """
-Embeddings via HuggingFace Hub InferenceClient
-Latest API - Production-ready for Render
+Embeddings via HuggingFace InferenceClient
+CORRECT API: Using provider='hf-inference' with feature_extraction
 """
 import os
 import logging
@@ -9,49 +9,45 @@ from huggingface_hub import InferenceClient
 
 logger = logging.getLogger(__name__)
 
-# Model configuration
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 EMBEDDING_DIM = 384
 
 def get_hf_client() -> InferenceClient:
-    """
-    Get configured HuggingFace InferenceClient.
-    Checks both HF_API_KEY and HF_TOKEN.
-    """
+    """Get HuggingFace InferenceClient."""
     api_key = os.getenv("HF_API_KEY") or os.getenv("HF_TOKEN")
     
     if not api_key:
         raise EnvironmentError(
-            "HF_API_KEY or HF_TOKEN not found in environment. "
+            "HF_API_KEY or HF_TOKEN not found. "
             "Get one at: https://huggingface.co/settings/tokens"
         )
     
-    return InferenceClient(api_key=api_key)
+    # ✅ CORRECT: Use hf-inference provider
+    return InferenceClient(
+        provider="hf-inference",
+        api_key=api_key
+    )
 
 
 def generate_embeddings(texts: Union[str, List[str]]) -> Union[List[float], List[List[float]]]:
     """
-    Generate embeddings using HuggingFace Hub.
+    Generate embeddings using HuggingFace InferenceClient.
     
     Args:
         texts: Single string or list of strings
         
     Returns:
-        Single embedding or list of embeddings (384-d each)
+        Single embedding or list of embeddings (384-d)
     """
-    # Normalize input
     is_single = isinstance(texts, str)
     text_list = [texts] if is_single else texts
     
     if not text_list:
         raise ValueError("No text provided")
     
-    # Validate
     for i, text in enumerate(text_list):
-        if not isinstance(text, str):
-            raise TypeError(f"Item {i} is not a string")
-        if not text.strip():
-            raise ValueError(f"Item {i} is empty")
+        if not isinstance(text, str) or not text.strip():
+            raise ValueError(f"Invalid text at index {i}")
     
     logger.info(f"🧠 Generating {len(text_list)} embedding(s)...")
     
@@ -60,10 +56,23 @@ def generate_embeddings(texts: Union[str, List[str]]) -> Union[List[float], List
         
         # Single text
         if is_single:
-            embedding = client.feature_extraction(
-                text=text_list[0],
+            # ✅ Use feature_extraction method
+            result = client.feature_extraction(
+                text_list[0],
                 model=MODEL_NAME
             )
+            
+            # Handle response format
+            # HF returns different formats: [[emb]] or [emb]
+            if isinstance(result, list):
+                if len(result) > 0 and isinstance(result[0], list):
+                    # Nested: [[emb]] -> [emb]
+                    embedding = result[0]
+                else:
+                    # Flat: [emb]
+                    embedding = result
+            else:
+                raise ValueError(f"Unexpected response type: {type(result)}")
             
             # Validate dimension
             if len(embedding) != EMBEDDING_DIM:
@@ -76,19 +85,26 @@ def generate_embeddings(texts: Union[str, List[str]]) -> Union[List[float], List
         else:
             embeddings = []
             
-            # Process one by one (HF Hub doesn't support batch feature_extraction yet)
             for i, text in enumerate(text_list):
-                embedding = client.feature_extraction(
-                    text=text,
+                result = client.feature_extraction(
+                    text,
                     model=MODEL_NAME
                 )
                 
+                # Handle response format
+                if isinstance(result, list):
+                    if len(result) > 0 and isinstance(result[0], list):
+                        embedding = result[0]
+                    else:
+                        embedding = result
+                else:
+                    raise ValueError(f"Unexpected response for item {i}")
+                
                 if len(embedding) != EMBEDDING_DIM:
-                    raise ValueError(f"Embedding {i} dimension mismatch")
+                    raise ValueError(f"Embedding {i} has dimension {len(embedding)}")
                 
                 embeddings.append(embedding)
                 
-                # Log progress
                 if (i + 1) % 10 == 0:
                     logger.info(f"📊 Progress: {i + 1}/{len(text_list)}")
             
@@ -96,24 +112,29 @@ def generate_embeddings(texts: Union[str, List[str]]) -> Union[List[float], List
             return embeddings
             
     except Exception as e:
-        logger.error(f"❌ Embedding generation failed: {e}")
+        logger.error(f"❌ Embedding failed: {e}")
         
         error_msg = str(e).lower()
         
-        if "unauthorized" in error_msg or "401" in error_msg:
+        if "410" in error_msg or "gone" in error_msg:
+            raise Exception(
+                "HuggingFace API endpoint deprecated. "
+                "Update to use InferenceClient with provider='hf-inference'"
+            )
+        elif "401" in error_msg or "unauthorized" in error_msg:
             raise Exception("Invalid HuggingFace API key")
-        elif "not found" in error_msg or "404" in error_msg:
+        elif "404" in error_msg:
             raise Exception(f"Model {MODEL_NAME} not found")
-        elif "rate limit" in error_msg or "429" in error_msg:
-            raise Exception("Rate limit exceeded. Wait and retry.")
+        elif "429" in error_msg:
+            raise Exception("Rate limit exceeded")
         else:
             raise Exception(f"Failed to generate embeddings: {str(e)}")
 
 
 def verify_embeddings_setup() -> dict:
-    """Health check for embeddings API."""
+    """Health check for embeddings."""
     try:
-        logger.info("🧪 Testing HuggingFace Hub...")
+        logger.info("🧪 Testing HuggingFace InferenceClient...")
         test_embedding = generate_embeddings("test")
         
         return {
@@ -123,6 +144,7 @@ def verify_embeddings_setup() -> dict:
             "api_key_configured": bool(os.getenv("HF_API_KEY") or os.getenv("HF_TOKEN"))
         }
     except Exception as e:
+        logger.error(f"❌ Health check failed: {e}")
         return {
             "status": "unhealthy",
             "error": str(e),
