@@ -1,19 +1,16 @@
 // ========================================
-// GOD LEVEL JAVASCRIPT - API Integration
+// Enterprise Knowledge Intelligence - Frontend
 // ========================================
 
-// 🔗 Backend API URL (UPDATE THIS AFTER RAILWAY DEPLOYMENT)
-const API_BASE = 'https://your-backend.up.railway.app'; // TODO: Update this!
+// ✅ UPDATED Backend URL (your Render deployment)
+const API_BASE = 'https://mini-rag-mm0h.onrender.com';
 
 // State
 let uploadRole = 'Employee';
 let searchRole = 'Employee';
 let selectedFile = null;
 
-// ========================================
-// DOM ELEMENTS
-// ========================================
-
+// DOM Elements
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
 const uploadBtn = document.getElementById('uploadBtn');
@@ -51,11 +48,7 @@ function showToast(message, type = 'success') {
         ? '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
         : '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
     
-    toast.innerHTML = `
-        ${icon}
-        <div class="toast-message">${message}</div>
-    `;
-    
+    toast.innerHTML = `${icon}<div class="toast-message">${message}</div>`;
     toastContainer.appendChild(toast);
     
     setTimeout(() => {
@@ -69,15 +62,12 @@ function showToast(message, type = 'success') {
 // ========================================
 
 function initializeUploadZone() {
-    // Click to upload
     uploadZone.addEventListener('click', () => fileInput.click());
     
-    // File selected
     fileInput.addEventListener('change', (e) => {
         handleFileSelect(e.target.files[0]);
     });
     
-    // Drag and drop
     uploadZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadZone.classList.add('dragover');
@@ -93,28 +83,24 @@ function initializeUploadZone() {
         handleFileSelect(e.dataTransfer.files[0]);
     });
     
-    // Upload button
     uploadBtn.addEventListener('click', handleUpload);
 }
 
 function handleFileSelect(file) {
     if (!file) return;
     
-    // Validate file type
     if (file.type !== 'application/pdf') {
         showToast('Please select a PDF file', 'error');
         return;
     }
     
-    // Validate file size (20MB)
     if (file.size > 20 * 1024 * 1024) {
-        showToast('File size exceeds 20MB limit', 'error');
+        showToast('File exceeds 20MB limit', 'error');
         return;
     }
     
     selectedFile = file;
     
-    // Update UI
     const uploadText = uploadZone.querySelector('.upload-text');
     const uploadSubtext = uploadZone.querySelector('.upload-subtext');
     uploadText.textContent = file.name;
@@ -125,17 +111,15 @@ function handleFileSelect(file) {
 
 async function handleUpload() {
     if (!selectedFile) {
-        showToast('Please select a PDF file first', 'error');
+        showToast('Please select a PDF first', 'error');
         return;
     }
     
-    // Prepare form data
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('role', uploadRole);
     formData.append('doc_type', docTypeSelect.value);
     
-    // Show loading state
     uploadBtn.disabled = true;
     uploadBtn.classList.add('loading');
     uploadResult.innerHTML = '';
@@ -149,10 +133,9 @@ async function handleUpload() {
         const data = await response.json();
         
         if (response.ok) {
-            showToast('Document uploaded successfully!', 'success');
+            showToast('Upload successful!', 'success');
             displayUploadResult(data);
             
-            // Reset upload zone
             setTimeout(() => {
                 selectedFile = null;
                 const uploadText = uploadZone.querySelector('.upload-text');
@@ -166,7 +149,7 @@ async function handleUpload() {
         }
     } catch (error) {
         console.error('Upload error:', error);
-        showToast(error.message || 'Upload failed. Please try again.', 'error');
+        showToast(error.message || 'Upload failed', 'error');
     } finally {
         uploadBtn.disabled = false;
         uploadBtn.classList.remove('loading');
@@ -185,7 +168,7 @@ function displayUploadResult(data) {
             <div style="font-size: 0.875rem; color: var(--text-secondary);">
                 <div>📄 <strong>${data.filename}</strong></div>
                 <div>📊 ${data.chunks_created} chunks created</div>
-                <div>🔒 Access level: ${data.doc_type}</div>
+                <div>🔒 Access: ${data.doc_type}</div>
             </div>
         </div>
     `;
@@ -203,12 +186,10 @@ function initializeRoleButtons() {
             const role = chip.dataset.role;
             const target = chip.dataset.target || 'upload';
             
-            // Update active state
             const siblings = chip.parentElement.querySelectorAll('.chip');
             siblings.forEach(s => s.classList.remove('active'));
             chip.classList.add('active');
             
-            // Update role
             if (target === 'search') {
                 searchRole = role;
             } else {
@@ -241,16 +222,13 @@ async function handleSearch() {
         return;
     }
     
-    // Show loading
     loadingState.style.display = 'block';
     answerContainer.style.display = 'none';
     
     try {
         const response = await fetch(`${API_BASE}/api/query`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 query: query,
                 role: searchRole
@@ -266,7 +244,7 @@ async function handleSearch() {
         }
     } catch (error) {
         console.error('Search error:', error);
-        showToast(error.message || 'Search failed. Please try again.', 'error');
+        showToast(error.message || 'Search failed', 'error');
         loadingState.style.display = 'none';
     }
 }
@@ -275,10 +253,8 @@ function displayAnswer(data) {
     loadingState.style.display = 'none';
     answerContainer.style.display = 'block';
     
-    // Display answer
     answerText.textContent = data.answer;
     
-    // Display sources
     if (data.sources && data.sources.length > 0) {
         sourcesList.innerHTML = data.sources.map(source => `
             <div class="source-item">
@@ -290,10 +266,9 @@ function displayAnswer(data) {
             </div>
         `).join('');
     } else {
-        sourcesList.innerHTML = '<div style="color: var(--text-tertiary); font-size: 0.875rem;">No sources available</div>';
+        sourcesList.innerHTML = '<div style="color: var(--text-tertiary); font-size: 0.875rem;">No sources</div>';
     }
     
-    // Scroll to answer
     answerContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -303,67 +278,29 @@ function displayAnswer(data) {
 
 async function checkBackendHealth() {
     try {
-        const response = await fetch(`${API_BASE}/api/health`, {
-            method: 'GET'
-        });
+        const response = await fetch(`${API_BASE}/api/health`);
         
         if (response.ok) {
-            console.log('✅ Backend is healthy');
+            console.log('✅ Backend healthy');
         } else {
             console.warn('⚠️ Backend health check failed');
         }
     } catch (error) {
         console.error('❌ Cannot connect to backend:', error);
-        showToast('Warning: Backend connection issue. Check API_BASE in script.js', 'error');
+        showToast('Backend connection issue', 'error');
     }
 }
 
 // ========================================
-// UPLOAD RESULT DISPLAY
-// ========================================
-
-function displayUploadResult(data) {
-    uploadResult.style.display = 'block';
-    uploadResult.innerHTML = `
-        <div class="result-success">
-            <svg class="result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <div class="result-content">
-                <div class="result-title">Upload Successful!</div>
-                <div class="result-details">
-                    <div>📄 ${data.filename}</div>
-                    <div>📊 ${data.chunks_created} chunks created</div>
-                    <div>📝 ${data.text_length} characters processed</div>
-                    <div>🔒 ${data.doc_type} access level</div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// ========================================
-// UTILITY FUNCTIONS
-// ========================================
-
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
-
-// ========================================
-// ERROR BOUNDARY
+// ERROR HANDLERS
 // ========================================
 
 window.addEventListener('error', (event) => {
     console.error('Global error:', event.error);
-    showToast('An unexpected error occurred', 'error');
+    showToast('An error occurred', 'error');
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled promise rejection:', event.reason);
-    showToast('An unexpected error occurred', 'error');
+    console.error('Promise rejection:', event.reason);
+    showToast('An error occurred', 'error');
 });
