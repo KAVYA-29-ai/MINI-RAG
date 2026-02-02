@@ -1,0 +1,37 @@
+# ========================================
+# Enterprise Knowledge Intelligence Platform
+# Python Dependencies for Render Deployment
+# ========================================
+
+# Web Framework
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.19
+
+# Database & Vector Store
+supabase==2.10.0
+psycopg2-binary==2.9.10
+
+# PDF Processing
+pypdf==5.1.0
+
+# Embeddings & ML
+huggingface-hub==0.26.5
+sentence-transformers==3.3.1
+
+# LLM Integration
+google-generativeai==0.8.3
+
+# Data Validation
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# HTTP & API
+httpx==0.28.1
+requests==2.32.3
+
+# Utilities
+python-dotenv==1.0.1
+
+# ASGI Server (for production)
+gunicorn==23.0.0
