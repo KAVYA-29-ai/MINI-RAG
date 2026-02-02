@@ -26,8 +26,8 @@ google-genai==0.2.2
 pydantic==2.10.3
 pydantic-settings==2.6.1
 
-# HTTP & API
-httpx==0.28.1
+# HTTP & API (version compatible with supabase)
+httpx<0.28,>=0.26
 requests==2.32.3
 
 # Utilities
