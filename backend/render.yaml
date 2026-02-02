@@ -1,0 +1,21 @@
+services:
+2  - type: web
+3    name: mini-rag-backend
+4    env: python
+5    region: oregon
+6    plan: free
+7    branch: main
+8    buildCommand: pip install -r requirements.txt
+9    startCommand: uvicorn index:app --host 0.0.0.0 --port $PORT
+10    envVars:
+11      - key: PYTHON_VERSION
+12        value: 3.11.11
+13      - key: SUPABASE_URL
+14        sync: false
+15      - key: SUPABASE_KEY
+16        sync: false
+17      - key: HF_API_KEY
+18        sync: false
+19      - key: GEMINI_API_KEY
+20        sync: false
+21
