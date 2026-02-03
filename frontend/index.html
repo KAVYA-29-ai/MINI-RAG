@@ -3,10 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Enterprise Knowledge AI | RAG-Powered Search</title>
+
+    <!-- ✅ Favicons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+
+    <!-- Optional but professional -->
+    <meta name="theme-color" content="#6C63FF">
+
+    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <!-- Animated Background -->
     <div class="bg-gradient"></div>
     <div class="bg-grid"></div>
@@ -137,12 +149,8 @@
                         <circle cx="11" cy="11" r="8"/>
                         <path d="m21 21-4.35-4.35"/>
                     </svg>
-                    <input 
-                        type="text" 
-                        id="queryInput" 
-                        class="search-input" 
-                        placeholder="What is the vacation policy?"
-                    >
+                    <input type="text" id="queryInput" class="search-input"
+                           placeholder="What is the vacation policy?">
                     <button class="search-btn" id="searchBtn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <line x1="22" y1="2" x2="11" y2="13"/>
@@ -169,31 +177,19 @@
                     </div>
                 </div>
 
-                <!-- Loading State -->
-                <div class="loading-state" id="loadingState" style="display: none;">
+                <div class="loading-state" id="loadingState" style="display:none;">
                     <div class="loading-spinner"></div>
                     <p class="loading-text">Searching knowledge base...</p>
                 </div>
 
-                <!-- Answer Display -->
-                <div class="answer-container" id="answerContainer" style="display: none;">
+                <div class="answer-container" id="answerContainer" style="display:none;">
                     <div class="answer-header">
-                        <svg class="answer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                        </svg>
                         <span class="answer-title">Answer</span>
                     </div>
                     <div class="answer-content" id="answerText"></div>
-                    
-                    <div class="sources-container" id="sourcesContainer">
-                        <div class="sources-header">
-                            <svg class="sources-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
-                                <polyline points="13 2 13 9 20 9"/>
-                            </svg>
-                            <span>Sources</span>
-                        </div>
+
+                    <div class="sources-container">
+                        <div class="sources-header">Sources</div>
                         <div class="sources-list" id="sourcesList"></div>
                     </div>
                 </div>
@@ -202,7 +198,7 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Built with ❤️ using FastAPI, Supabase, HuggingFace & Google Gemini</p>
+            <p>Built By Team 109 with ❤️ using FastAPI, Supabase & Google Gemini</p>
             <div class="tech-badges">
                 <span class="tech-badge">pgvector</span>
                 <span class="tech-badge">RAG</span>
@@ -211,7 +207,6 @@
         </footer>
     </div>
 
-    <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
 
     <script src="script.js"></script>
