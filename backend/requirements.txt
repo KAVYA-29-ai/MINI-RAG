@@ -16,11 +16,7 @@ psycopg2-binary==2.9.10
 # PDF Processing
 pypdf==5.1.0
 
-# Embeddings (HF Inference API – no local ML)
-huggingface-hub==0.26.5
-requests==2.32.3
-
-# LLM Integration (NEW Gemini SDK)
+# ✅ Embeddings + LLM (Gemini – single provider)
 google-genai==0.2.2
 
 # Validation & Settings
@@ -29,6 +25,7 @@ pydantic-settings==2.6.1
 
 # HTTP Client (Supabase + Google SDK compatible)
 httpx>=0.26,<0.28
+requests==2.32.3   # used by Supabase internally
 
 # Utilities
 python-dotenv==1.0.1
