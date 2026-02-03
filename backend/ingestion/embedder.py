@@ -22,7 +22,8 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 def generate_embeddings(
-    texts: Union[str, List[str]]
+    texts: Union[str, List[str]],
+    task_type: str = "retrieval_document"
 ) -> Union[List[float], List[List[float]]]:
 
     is_single = isinstance(texts, str)
@@ -36,12 +37,14 @@ def generate_embeddings(
     response = client.models.embed_content(
         model=MODEL_NAME,
         contents=text_list,
-        task_type="retrieval_document"
+        task_type=task_type
     )
+
+    if not response.embeddings:
+        raise RuntimeError("No embeddings returned from Gemini")
 
     embeddings = [e.values for e in response.embeddings]
 
-    # Safety check
     for i, emb in enumerate(embeddings):
         if len(emb) != EMBEDDING_DIM:
             raise ValueError(
