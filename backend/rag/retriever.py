@@ -1,13 +1,19 @@
 """
 RAG Retriever - Semantic search with Supabase pgvector
+Gemini embeddings (768-d)
 RBAC enforced at database level
 """
+
 import logging
 from typing import Dict, Any
+
 from db.supabase_client import get_supabase_client
 from ingestion.embedder import generate_embeddings
 
 logger = logging.getLogger(__name__)
+
+EMBEDDING_DIM = 768  # ✅ GEMINI STANDARD
+
 
 def search_documents(
     query: str,
@@ -16,46 +22,32 @@ def search_documents(
     similarity_threshold: float = 0.7
 ) -> Dict[str, Any]:
     """
-    Search for relevant documents using semantic similarity.
-    RBAC filtering happens in SQL (match_documents function).
-    
-    Args:
-        query: User's question
-        role: User role (Admin/HR/Employee)
-        top_k: Number of results (default: 5)
-        similarity_threshold: Min similarity (0-1, default: 0.7)
-        
-    Returns:
-        Dict with context, sources, and count
+    Semantic search using Gemini embeddings + Supabase RPC
     """
-    # Input validation
+
     if not query or not query.strip():
         raise ValueError("Query cannot be empty")
-    
-    # Validate role
+
     valid_roles = ["Admin", "HR", "Employee"]
     if role not in valid_roles:
-        logger.warning(f"Invalid role '{role}', defaulting to 'Employee'")
+        logger.warning(f"Invalid role '{role}', defaulting to Employee")
         role = "Employee"
-    
-    logger.info(f"🔍 Searching: '{query[:50]}...' (role: {role})")
-    
+
+    logger.info(f"🔍 Searching query='{query[:50]}...' role={role}")
+
     try:
-        # 1. Generate query embedding
-        logger.info("🧠 Generating query embedding...")
+        # 1️⃣ Generate query embedding (Gemini)
         query_embedding = generate_embeddings(query)
-        
-        # Validate dimension
-        if len(query_embedding) != 384:
-            raise ValueError(f"Invalid embedding dimension: {len(query_embedding)}")
-        
-        # 2. Call Supabase RPC function
-        # RBAC happens in SQL - role passed to match_documents
+
+        if len(query_embedding) != EMBEDDING_DIM:
+            raise ValueError(
+                f"Invalid embedding dimension: {len(query_embedding)}"
+            )
+
+        # 2️⃣ Call Supabase RPC (RBAC handled in SQL)
         client = get_supabase_client()
-        
-        logger.info(f"📊 Calling match_documents RPC (role: {role})")
-        
-        results = client.rpc(
+
+        response = client.rpc(
             "match_documents",
             {
                 "query_embedding": query_embedding,
@@ -64,49 +56,37 @@ def search_documents(
                 "match_count": top_k
             }
         ).execute()
-        
-        # 3. Check results
-        if not results.data or len(results.data) == 0:
-            logger.warning("⚠️ No documents found")
+
+        rows = response.data or []
+
+        if not rows:
+            logger.info("⚠️ No matching documents found")
             return {
                 "context": "",
                 "sources": [],
                 "count": 0
             }
-        
-        logger.info(f"✅ Found {len(results.data)} relevant documents")
-        
-        # 4. Format context and sources
+
+        # 3️⃣ Build context + sources
         context_chunks = []
         sources = []
-        
-        for i, doc in enumerate(results.data):
-            # Build context with source info
-            context_chunks.append(
-                f"[Source {i+1}: {doc.get('filename', 'Unknown')} - "
-                f"Page {doc.get('page_number', '?')}]\n"
-                f"{doc.get('content', '').strip()}"
-            )
-            
-            # Track source metadata
+
+        for idx, row in enumerate(rows):
+            context_chunks.append(row["content"])
+
             sources.append({
-                "filename": doc.get("filename", "Unknown"),
-                "page": doc.get("page_number"),
-                "similarity": round(doc.get("similarity", 0), 3),
-                "doc_type": doc.get("doc_type", "public")
+                "filename": row["filename"],
+                "page": row["page_number"],
+                "similarity": round(row["similarity"], 3),
+                "doc_type": row["doc_type"]
             })
-        
-        # Combine context
-        full_context = "\n\n".join(context_chunks)
-        
-        logger.info(f"📝 Context length: {len(full_context)} chars")
-        
+
         return {
-            "context": full_context,
+            "context": "\n\n".join(context_chunks),
             "sources": sources,
-            "count": len(results.data)
+            "count": len(rows)
         }
-        
+
     except Exception as e:
         logger.error(f"❌ Search failed: {e}")
         raise Exception(f"Failed to search documents: {str(e)}")
