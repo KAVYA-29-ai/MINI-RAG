@@ -53,19 +53,14 @@ def generate_embeddings(
 
 
 def verify_embeddings_setup() -> dict:
-    try:
-        emb = generate_embeddings("health check")
-        return {
-            "status": "healthy",
-            "model": MODEL_NAME,
-            "dimension": len(emb),
-            "provider": "gemini"
-        }
-    except Exception as e:
-        logger.error(f"❌ Gemini embedding health check failed: {e}")
-        return {
-            "status": "unhealthy",
-            "error": str(e),
-            "model": MODEL_NAME,
-            "provider": "gemini"
-        }
+    """
+    Lightweight health check for embeddings.
+    Does NOT call Gemini API to avoid quota exhaustion.
+    """
+    return {
+        "status": "healthy",
+        "model": MODEL_NAME,
+        "dimension": EMBEDDING_DIM,
+        "provider": "gemini",
+        "note": "Live embedding call skipped in health check"
+    }
