@@ -1,35 +1,24 @@
 """
-Embeddings Generator
-Hugging Face Inference API (Explicit Feature-Extraction Pipeline)
-Production-safe for Render / Vercel
+Embeddings via Google Gemini
+Model: text-embedding-004 (768-d)
+STABLE & PRODUCTION READY
 """
 
 import os
-import requests
 import logging
 from typing import List, Union
+from google import genai
 
 logger = logging.getLogger(__name__)
 
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-EMBEDDING_DIM = 384
+MODEL_NAME = "text-embedding-004"
+EMBEDDING_DIM = 768
 
-HF_API_TOKEN = os.getenv("HF_API_TOKEN") or os.getenv("HF_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise RuntimeError("GEMINI_API_KEY not set")
 
-HF_EMBEDDING_URL = (
-    "https://router.huggingface.co/hf-inference/pipeline/feature-extraction/"
-    f"{MODEL_NAME}"
-)
-
-
-def _get_headers() -> dict:
-    if not HF_API_TOKEN:
-        raise RuntimeError("HF_API_TOKEN or HF_API_KEY not set")
-
-    return {
-        "Authorization": f"Bearer {HF_API_TOKEN}",
-        "Content-Type": "application/json",
-    }
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 def generate_embeddings(
@@ -39,65 +28,43 @@ def generate_embeddings(
     is_single = isinstance(texts, str)
     text_list = [texts] if is_single else texts
 
-    if not text_list:
-        raise ValueError("No text provided")
+    if not text_list or not all(isinstance(t, str) and t.strip() for t in text_list):
+        raise ValueError("Invalid input text(s)")
 
-    for i, t in enumerate(text_list):
-        if not isinstance(t, str) or not t.strip():
-            raise ValueError(f"Invalid text at index {i}")
+    logger.info(f"🧠 Generating {len(text_list)} Gemini embedding(s)")
 
-    logger.info(f"🧠 Generating {len(text_list)} embedding(s)")
-
-    # 🔥 Explicit feature-extraction payload
-    payload = {
-        "inputs": text_list
-    }
-
-    response = requests.post(
-        HF_EMBEDDING_URL,
-        headers=_get_headers(),
-        json=payload,
-        timeout=30,
+    response = client.models.embed_content(
+        model=MODEL_NAME,
+        contents=text_list,
+        task_type="retrieval_document"
     )
 
-    try:
-        response.raise_for_status()
-    except Exception as e:
-        raise RuntimeError(f"HF embedding request failed: {response.text}") from e
+    embeddings = [e.values for e in response.embeddings]
 
-    data = response.json()
-
-    # Normalize output
-    if is_single:
-        embedding = data[0] if isinstance(data[0], list) else data
-        if len(embedding) != EMBEDDING_DIM:
-            raise ValueError(
-                f"Expected {EMBEDDING_DIM}-d, got {len(embedding)}-d"
-            )
-        return embedding
-
-    for i, emb in enumerate(data):
+    # Safety check
+    for i, emb in enumerate(embeddings):
         if len(emb) != EMBEDDING_DIM:
-            raise ValueError(f"Embedding {i} has dimension {len(emb)}")
+            raise ValueError(
+                f"Embedding {i} dimension mismatch: {len(emb)} != {EMBEDDING_DIM}"
+            )
 
-    logger.info(f"✅ Generated {len(data)} embeddings")
-    return data
+    return embeddings[0] if is_single else embeddings
 
 
 def verify_embeddings_setup() -> dict:
     try:
-        test = generate_embeddings("health check")
+        emb = generate_embeddings("health check")
         return {
             "status": "healthy",
             "model": MODEL_NAME,
-            "dimension": len(test),
-            "api_key_configured": bool(HF_API_TOKEN),
+            "dimension": len(emb),
+            "provider": "gemini"
         }
     except Exception as e:
-        logger.error(f"❌ Embedding health check failed: {e}")
+        logger.error(f"❌ Gemini embedding health check failed: {e}")
         return {
             "status": "unhealthy",
             "error": str(e),
             "model": MODEL_NAME,
-            "api_key_configured": bool(HF_API_TOKEN),
+            "provider": "gemini"
         }
