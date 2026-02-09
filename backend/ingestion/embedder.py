@@ -1,9 +1,3 @@
-"""
-Embeddings via Google Gemini
-Model: text-embedding-004 (768-d)
-STABLE & PRODUCTION READY
-"""
-
 import os
 import logging
 from typing import List, Union
@@ -18,37 +12,48 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY not set")
 
-client = genai.Client(api_key=GEMINI_API_KEY)
-
+# ✅ FIX: Specify API version v1
+client = genai.Client(
+    api_key=GEMINI_API_KEY,
+    http_options={'api_version': 'v1'}
+)
 
 def generate_embeddings(
     texts: Union[str, List[str]]
 ) -> Union[List[float], List[List[float]]]:
-
+    """
+    Generate embeddings using Google Gemini text-embedding-004 model.
+    
+    Args:
+        texts: Single string or list of strings to embed
+        
+    Returns:
+        Single embedding (list of floats) or list of embeddings
+    """
     is_single = isinstance(texts, str)
     text_list = [texts] if is_single else texts
-
+    
     if not text_list or not all(isinstance(t, str) and t.strip() for t in text_list):
         raise ValueError("Invalid input text(s)")
-
+    
     logger.info(f"🧠 Generating {len(text_list)} Gemini embedding(s)")
-
+    
     response = client.models.embed_content(
         model=MODEL_NAME,
         contents=text_list
     )
-
+    
     if not response.embeddings:
         raise RuntimeError("No embeddings returned from Gemini")
-
+    
     embeddings = [e.values for e in response.embeddings]
-
+    
     for i, emb in enumerate(embeddings):
         if len(emb) != EMBEDDING_DIM:
             raise ValueError(
                 f"Embedding {i} dimension mismatch: {len(emb)} != {EMBEDDING_DIM}"
             )
-
+    
     return embeddings[0] if is_single else embeddings
 
 
