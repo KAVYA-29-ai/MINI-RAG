@@ -2,27 +2,27 @@ import os
 import logging
 from typing import List, Union
 from google import genai
+from google.genai import types
 
 logger = logging.getLogger(__name__)
 
-MODEL_NAME = "text-embedding-004"
-EMBEDDING_DIM = 768
+# ✅ CORRECTED MODEL NAME
+MODEL_NAME = "gemini-embedding-001"
+EMBEDDING_DIM = 768  # We'll use output_dimensionality to get 768-d vectors
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY not set")
 
-# ✅ FIX: Specify API version v1
-client = genai.Client(
-    api_key=GEMINI_API_KEY,
-    http_options={'api_version': 'v1'}
-)
+# ✅ Simple client initialization (no version needed)
+client = genai.Client(api_key=GEMINI_API_KEY)
+
 
 def generate_embeddings(
     texts: Union[str, List[str]]
 ) -> Union[List[float], List[List[float]]]:
     """
-    Generate embeddings using Google Gemini text-embedding-004 model.
+    Generate embeddings using Google Gemini embedding model.
     
     Args:
         texts: Single string or list of strings to embed
@@ -38,9 +38,13 @@ def generate_embeddings(
     
     logger.info(f"🧠 Generating {len(text_list)} Gemini embedding(s)")
     
+    # ✅ Use output_dimensionality to get 768-d vectors
     response = client.models.embed_content(
         model=MODEL_NAME,
-        contents=text_list
+        contents=text_list,
+        config=types.EmbedContentConfig(
+            output_dimensionality=EMBEDDING_DIM
+        )
     )
     
     if not response.embeddings:
