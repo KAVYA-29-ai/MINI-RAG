@@ -1,7 +1,7 @@
 
 <div align="center">
 # Version 2 uploaded succesfully 
-# 🚀 MINIRAG2 — Enterprise Knowledge Intelligence Platform
+# 🚀 EDURAG — Enterprise Knowledge Intelligence Platform
 
 <p align="center">
    <strong>Semantic Search & Retrieval-Augmented Generation (RAG) for teams, educators, and students — powered by Gemini AI & Supabase</strong>
