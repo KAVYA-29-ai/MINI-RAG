@@ -1,4 +1,5 @@
 # Version 2 uploaded succesfully 
+https://minirag-2.vercel.app/
 <div align="center">
    
 # 🚀 EDURAG — Enterprise Knowledge Intelligence Platform
