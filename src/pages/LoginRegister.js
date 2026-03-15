@@ -1,3 +1,8 @@
+/**
+ * LoginRegister.js - Auth page for MINI-RAG frontend.
+ *
+ * Handles user login and registration forms, validation, and API calls.
+ */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '../components/AnimatedBackground';

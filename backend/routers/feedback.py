@@ -1,5 +1,9 @@
+
 """
-Feedback Router — all data in Supabase.
+Feedback Router for MINI-RAG Backend
+
+Provides endpoints for submitting and managing feedback. All feedback data is stored in Supabase.
+Only teachers can submit feedback via this router.
 """
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional

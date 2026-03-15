@@ -1,3 +1,8 @@
+/**
+ * TeacherDashboard.js - Dashboard page for teachers in MINI-RAG frontend.
+ *
+ * Handles RAG search, profile management, student analysis, feedback, and analytics for teachers.
+ */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '../components/AnimatedBackground';

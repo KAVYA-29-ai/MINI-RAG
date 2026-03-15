@@ -1,5 +1,9 @@
+
 """
-Student Chatroom Router — messages auto-delete after timer.
+Chat Router for MINI-RAG Backend
+
+Provides endpoints for student chatroom functionality. Messages are auto-deleted after a configurable timer.
+Includes message creation and retrieval endpoints. Only students can send messages.
 """
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel

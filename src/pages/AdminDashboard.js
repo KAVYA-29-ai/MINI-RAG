@@ -1,3 +1,8 @@
+/**
+ * AdminDashboard.js - Dashboard page for admins in MINI-RAG frontend.
+ *
+ * Handles user management, analytics, feedback, and PDF management for admins.
+ */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '../components/AnimatedBackground';

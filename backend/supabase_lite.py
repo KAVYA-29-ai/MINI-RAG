@@ -1,9 +1,20 @@
-"""
-Lightweight Supabase client using httpx — drop-in replacement for the heavy
-`supabase` Python SDK.  Only implements the PostgREST query-builder and
-Storage APIs actually used in this project.
 
-This keeps the Vercel serverless function well under the 250 MB limit.
+"""
+Lightweight Supabase client using httpx.
+
+This module is a drop-in replacement for the heavy `supabase` Python SDK. It only implements
+the PostgREST query-builder and Storage APIs actually used in this project, keeping the Vercel
+serverless function well under the 250 MB limit.
+
+Main Components:
+- _Response: Mimics the APIResponse from the official SDK.
+- _QueryBuilder: Chainable query builder for PostgREST endpoints.
+- _BucketClient: Minimal storage client for buckets.
+
+Usage:
+    builder = _QueryBuilder(url, headers, table)
+    response = builder.select('id,name').eq('id', 1).execute()
+    print(response.data)
 """
 
 import httpx
@@ -16,15 +27,29 @@ _TIMEOUT = 30.0
 
 # ---- helpers ---------------------------------------------------------------
 
+
 class _Response:
-    """Mimics the `APIResponse` returned by the official SDK."""
+    """
+    Mimics the `APIResponse` returned by the official Supabase SDK.
+
+    Attributes:
+        data: The data returned from the API call.
+    """
     def __init__(self, data):
         self.data = data
 
 
+
 def _clean_select(columns: str) -> str:
-    """Strip whitespace around commas in a select string while preserving
-    PostgREST relationship syntax like ``users!sender_id(name, avatar)``."""
+    """
+    Strip whitespace around commas in a select string while preserving
+    PostgREST relationship syntax like ``users!sender_id(name, avatar)``.
+
+    Args:
+        columns (str): The select string to clean.
+    Returns:
+        str: Cleaned select string with whitespace removed around commas.
+    """
     # Split on parenthesised groups so we can clean inside and outside
     parts = re.split(r"(\([^)]*\))", columns)
     cleaned = []
@@ -41,10 +66,27 @@ def _clean_select(columns: str) -> str:
 
 # ---- PostgREST query builder -----------------------------------------------
 
+
 class _QueryBuilder:
-    """Chainable query builder that mirrors the supabase-py `.table()` API."""
+    """
+    Chainable query builder that mirrors the supabase-py `.table()` API.
+
+    Methods correspond to PostgREST query verbs and filters, allowing for fluent chaining.
+
+    Example:
+        qb = _QueryBuilder(url, headers, 'users')
+        qb.select('id,name').eq('id', 1).execute()
+    """
 
     def __init__(self, url: str, headers: dict, table: str):
+        """
+        Initialize the query builder for a specific table.
+
+        Args:
+            url (str): Base URL for the Supabase instance.
+            headers (dict): HTTP headers for authentication, etc.
+            table (str): Table name to query.
+        """
         self._base = f"{url}/rest/v1/{urlquote(table)}"
         self._headers = {**headers}
         self._params: list[tuple[str, str]] = []
@@ -55,6 +97,13 @@ class _QueryBuilder:
     # --- query verbs ---
 
     def select(self, columns: str = "*"):
+        """
+        Specify columns to select from the table.
+        Args:
+            columns (str): Comma-separated column names (default: '*').
+        Returns:
+            self: For chaining.
+        """
         self._method = "GET"
         self._params.append(("select", _clean_select(columns)))
         return self

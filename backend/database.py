@@ -1,8 +1,15 @@
-"""
-Database Configuration — 100% Supabase (no local SQLite)
 
-All tables (users, feedback, search_history, analytics, pdfs, pdf_chunks, rag_embeddings) live in Supabase PostgreSQL.
-This module provides Supabase client initialization and access helpers.
+"""
+Database Configuration for MINI-RAG Backend
+
+This module manages all database connections and configuration for the backend.
+All tables (users, feedback, search_history, analytics, pdfs, pdf_chunks, rag_embeddings)
+are stored in Supabase PostgreSQL. No local SQLite is used.
+
+Exports:
+- init_supabase: Initializes Supabase clients (anon and service-role).
+- supabase: Anon client for restricted access.
+- supabase_admin: Service-role client for full access (bypasses RLS).
 """
 import os
 from dotenv import load_dotenv

@@ -1,3 +1,8 @@
+/**
+ * api.js - API service layer for MINI-RAG frontend.
+ *
+ * Handles all HTTP requests to the backend API, including dynamic base URL selection and response parsing.
+ */
 // API Service Layer for EduRag
 
 // Dynamically determine API URL based on environment

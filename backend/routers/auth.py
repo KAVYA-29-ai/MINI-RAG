@@ -1,5 +1,9 @@
+
 """
-Authentication Router — all user data lives in Supabase.
+Authentication Router for MINI-RAG Backend
+
+Handles user registration, login, JWT token management, and authentication-related endpoints.
+All user data is stored in Supabase.
 """
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials

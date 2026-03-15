@@ -1,7 +1,18 @@
-"""
-EduRag Backend - FastAPI with Supabase
 
-This is the main entry point for the EduRag backend API, which provides endpoints for authentication, user management, feedback, RAG search, analytics, and chat. All data is stored in Supabase.
+"""
+MINI-RAG Backend Main Entry Point
+
+This file launches the FastAPI application for the MINI-RAG project.
+It provides API endpoints for:
+    - Authentication
+    - User management
+    - Feedback
+    - RAG (Retrieval-Augmented Generation) search
+    - Analytics
+    - Chat
+
+All persistent data is stored in Supabase PostgreSQL.
+Routers are imported from the backend/routers/ directory.
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware

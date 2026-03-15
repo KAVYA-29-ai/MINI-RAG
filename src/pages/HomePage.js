@@ -1,3 +1,8 @@
+/**
+ * HomePage.js - Landing page for MINI-RAG frontend.
+ *
+ * Displays animated background, navigation, and hero section for EduRag.
+ */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '../components/AnimatedBackground';

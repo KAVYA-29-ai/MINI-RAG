@@ -1,5 +1,9 @@
+
 """
-Analytics Router — all queries hit Supabase.
+Analytics Router for MINI-RAG Backend
+
+Provides endpoints for retrieving system analytics and statistics. All analytics data is queried from Supabase.
+Only admins can access analytics endpoints.
 """
 from fastapi import APIRouter, HTTPException, Depends
 from datetime import datetime, timedelta

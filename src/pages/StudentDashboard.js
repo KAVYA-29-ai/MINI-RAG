@@ -1,3 +1,14 @@
+
+/**
+ * StudentDashboard - Main dashboard page for student users.
+ *
+ * Features:
+ * - RAG search and results
+ * - User profile management
+ * - Buddy system
+ * - Feedback submission
+ * - Animated background
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '../components/AnimatedBackground';
@@ -5,53 +16,102 @@ import { authAPI, ragAPI, usersAPI, studentFeedbackAPI } from '../services/api';
 import { handleError } from '../services/errorHandler';
 import './StudentDashboard.css';
 
+/**
+ * StudentDashboard component
+ * Handles student interactions, search, profile, buddies, and feedback.
+ */
 const StudentDashboard = () => {
+  // Placeholder image paths
   const AVATAR_PLACEHOLDER = '/images/avatar-placeholder.svg';
   const LOGO_PLACEHOLDER = '/images/flavcoin.png';
 
   const navigate = useNavigate();
+
+  // --- State variables ---
+
+  /**
+   * Current active tab (rag-search, profile, etc.)
+   * @type {[string, Function]}
+   */
   const [activeTab, setActiveTab] = useState('rag-search');
+
+  /**
+   * Search query input by user
+   * @type {[string, Function]}
+   */
   const [searchQuery, setSearchQuery] = useState('');
+
+  /**
+   * Results returned from RAG search
+   * @type {[Array, Function]}
+   */
   const [searchResults, setSearchResults] = useState([]);
+
+  /**
+   * Generated answer from RAG
+   * @type {[string, Function]}
+   */
   const [generatedAnswer, setGeneratedAnswer] = useState('');
+
+  /**
+   * Loading and UI state
+   */
   const [searching, setSearching] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  
-  // User data from API
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userName, setUserName] = useState('');
-  const [editName, setEditName] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState('male');
-  
-  // Buddies from API
-  const [buddies, setBuddies] = useState([]);
-  const [buddySearch, setBuddySearch] = useState("");
-  
-  // Search history
+
+  // --- User profile state ---
+  const [currentUser, setCurrentUser] = useState(null); // User object from API
+  const [userName, setUserName] = useState(''); // Display name
+  const [editName, setEditName] = useState(''); // Name being edited
+  const [selectedAvatar, setSelectedAvatar] = useState('male'); // Avatar selection
+
+  // --- Buddies system ---
+  const [buddies, setBuddies] = useState([]); // List of buddies
+  const [buddySearch, setBuddySearch] = useState(""); // Buddy search input
+
+  // --- Search history ---
   const [searchHistory, setSearchHistory] = useState([]);
-  
-  // Feedback
+
+  // --- Feedback ---
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(true);
 
+  /**
+   * Get avatar image source by gender
+   * @param {string} avatar - 'male' or 'female'
+   * @returns {string} image path
+   */
   const getAvatarSrc = (avatar) => (avatar === 'female' ? '/images/female.png' : '/images/male.png');
 
+  /**
+   * Handle avatar image load error
+   * @param {Event} event
+   */
   const handleAvatarError = (event) => {
     event.currentTarget.onerror = null;
     event.currentTarget.src = AVATAR_PLACEHOLDER;
   };
 
+  /**
+   * Handle logo image load error
+   * @param {Event} event
+   */
   const handleLogoError = (event) => {
     event.currentTarget.onerror = null;
     event.currentTarget.src = LOGO_PLACEHOLDER;
   };
 
+  // --- Effects ---
   useEffect(() => {
     loadUserData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * Load user data from API and initialize dashboard state.
+   * Redirects to /auth if not logged in.
+   */
   const loadUserData = async () => {
     try {
       const user = authAPI.getCurrentUser();

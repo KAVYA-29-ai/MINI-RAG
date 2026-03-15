@@ -1,5 +1,9 @@
+
 """
-Pydantic Models for EduRag API
+Pydantic Models for MINI-RAG Backend
+
+Defines all data models, enums, and schemas used for request and response validation
+in the MINI-RAG FastAPI backend. Includes user, feedback, and other domain models.
 """
 from pydantic import BaseModel
 from typing import Optional, List

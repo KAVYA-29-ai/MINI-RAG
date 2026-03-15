@@ -1,3 +1,8 @@
+/**
+ * errorHandler.js - Centralized error handling for MINI-RAG frontend.
+ *
+ * Provides a single function to display and log errors in the UI.
+ */
 // Centralized error handler for UI
 export function handleError(error, fallbackMessage = 'An unexpected error occurred.') {
   let message = fallbackMessage;

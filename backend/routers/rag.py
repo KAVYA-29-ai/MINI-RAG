@@ -1,7 +1,9 @@
+
 """
-RAG Router - Document Search and PDF Management
-100% Supabase — no local storage at all.
-PDFs uploaded to Supabase Storage bucket "pdfs".
+RAG Router for MINI-RAG Backend
+
+Provides endpoints for Retrieval-Augmented Generation (RAG) document search, PDF upload, and management.
+All PDFs are uploaded to the Supabase Storage bucket "pdfs". No local storage is used.
 """
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from typing import List, Optional

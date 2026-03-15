@@ -1,3 +1,8 @@
+/**
+ * AnimatedBackground.js - Animated background component for MINI-RAG frontend.
+ *
+ * Renders animated blobs and glow orbs for visual effect.
+ */
 import React from 'react';
 import './AnimatedBackground.css';
 
